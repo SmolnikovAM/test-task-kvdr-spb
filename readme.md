@@ -20,14 +20,15 @@
 Данные:
 
 ```
-author
-    id
-    name
-books
-    id
-    title
-    date
-    author_id
+table: authors
+    id     <------|
+    name          |
+                  |
+table: books      |
+    id            |
+    title         |
+    date          |
+    author_id ----|
     description
     image // path_to_file
 ```
