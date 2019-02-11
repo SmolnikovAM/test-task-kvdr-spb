@@ -1,0 +1,110 @@
+{
+  "name": "kvadro-spb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "better-npm-run start",
+    "dev": "better-npm-run dev",
+    "seed": "better-npm-run seed",
+    "test:unit": "better-npm-run test:unit",
+    "test:e2e": "better-npm-run test:e2e"
+  },
+  "betterScripts": {
+    "start": {
+      "command": "node ./index.js",
+      "env": {
+        "KVDRTEST_env": "PROD",
+        "KVDRTEST_db__host": "localhost",
+        "KVDRTEST_db__database": "kvadro",
+        "KVDRTEST_db__user": "testuser",
+        "KVDRTEST_db__password": "password"
+      }
+    },
+    "dev": {
+      "command": "nodemon ./index.js",
+      "env": {
+        "KVDRTEST_env": "DEV",
+        "KVDRTEST_db__host": "localhost",
+        "KVDRTEST_db__database": "kvadrotest",
+        "KVDRTEST_db__user": "testuser",
+        "KVDRTEST_db__password": "password"
+      }
+    },
+    "seed": {
+      "command": "node ./scripts/seed.js",
+      "env": {
+        "KVDRTEST_env": "SEED",
+        "KVDRTEST_db__host": "localhost",
+        "KVDRTEST_db__database": "kvadro",
+        "KVDRTEST_db__user": "testuser",
+        "KVDRTEST_db__password": "password"
+      }
+    },
+    "test:unit": {
+      "command": "jest unit.spec",
+      "env": {
+        "KVDRTEST_env": "TEST"
+      }
+    },
+    "test:e2e": {
+      "command": "jest --runInBand e2e.test",
+      "env": {
+        "KVDRTEST_env": "TEST",
+        "KVDRTEST_db__host": "localhost",
+        "KVDRTEST_db__database": "kvadrotest",
+        "KVDRTEST_db__user": "testuser",
+        "KVDRTEST_db__password": "password",
+        "KVDRTEST_staticFolder": "./staticTest"
+      }
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "airbnb-base",
+      "prettier"
+    ],
+    "env": {
+      "node": true
+    },
+    "overrides": [
+      {
+        "files": [
+          "**/?(*.)+(test|spec).js"
+        ],
+        "env": {
+          "jest": true
+        }
+      }
+    ]
+  },
+  "author": "Smolnikov Andrei",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^6.8.1",
+    "better-npm-run": "^0.1.1",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "koa-static": "^5.0.0",
+    "mysql": "^2.16.0",
+    "parse-strings-in-object": "^1.2.0",
+    "rc": "^1.2.8",
+    "sqlite3": "^4.0.6",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.13.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^4.0.0",
+    "eslint-plugin-import": "^2.16.0",
+    "jest": "^24.0.0",
+    "nodemon": "^1.18.9",
+    "prettier": "^1.16.4",
+    "supertest": "^3.4.2"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all"
+  }
+}
