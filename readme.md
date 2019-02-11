@@ -35,4 +35,60 @@ table: books      |
 
 Картинки загружаются отдельно.
 
+Стартегия кэширования основана на поиске сделанного ранее SQL запроса.
+Время жизни кэша определяется в переменной окружения, default: 1 час.
+Любая операция мутации сбрасывает кэш.
+
 #Установка
+
+```
+npm install
+```
+
+требуется бд mysql и пользователь с правами на [create, drop, insert, update, select] table;
+передача параметров реализована через переменные окружения
+
+#Запуск
+
+Пример запуска e2e - тестирования.
+
+```
+export KVDRTEST_db__host=localhost &&
+export KVDRTEST_db__database=kvadrotest &&
+export KVDRTEST_db__user=testuser &&
+export KVDRTEST_db__password=password &&
+export KVDRTEST_staticFolder="./staticTest" &&
+npm run test:e2e
+```
+
+Для "рабочей" базы необходим другой путь
+
+```
+KVDRTEST_db__host=localhost &&
+KVDRTEST_db__database=kvadro &&
+KVDRTEST_db__user=testuser &&
+KVDRTEST_db__password=password &&
+npm start
+```
+
+Загрузка фикстур
+
+```
+KVDRTEST_db__host=localhost &&
+KVDRTEST_db__database=kvadro &&
+KVDRTEST_db__user=testuser &&
+KVDRTEST_db__password=password &&
+npm run seed
+```
+
+Для unit-тестов база не требуется
+
+```
+npm run test:unit
+```
+
+#TODO
+
+1. Тесты на cache - функциональность.
+2. Полное покрытие тестами QueryBuilder
+3. Полная проверка входяшийх параметров через ajv

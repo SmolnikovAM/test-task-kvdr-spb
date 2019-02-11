@@ -14,31 +14,19 @@
     "start": {
       "command": "node ./index.js",
       "env": {
-        "KVDRTEST_env": "PROD",
-        "KVDRTEST_db__host": "localhost",
-        "KVDRTEST_db__database": "kvadro",
-        "KVDRTEST_db__user": "testuser",
-        "KVDRTEST_db__password": "password"
+        "KVDRTEST_env": "PROD"
       }
     },
     "dev": {
       "command": "nodemon ./index.js",
       "env": {
-        "KVDRTEST_env": "DEV",
-        "KVDRTEST_db__host": "localhost",
-        "KVDRTEST_db__database": "kvadrotest",
-        "KVDRTEST_db__user": "testuser",
-        "KVDRTEST_db__password": "password"
+        "KVDRTEST_env": "DEV"
       }
     },
     "seed": {
       "command": "node ./scripts/seed.js",
       "env": {
-        "KVDRTEST_env": "SEED",
-        "KVDRTEST_db__host": "localhost",
-        "KVDRTEST_db__database": "kvadro",
-        "KVDRTEST_db__user": "testuser",
-        "KVDRTEST_db__password": "password"
+        "KVDRTEST_env": "SEED"
       }
     },
     "test:unit": {
@@ -50,12 +38,7 @@
     "test:e2e": {
       "command": "jest --runInBand e2e.test",
       "env": {
-        "KVDRTEST_env": "TEST",
-        "KVDRTEST_db__host": "localhost",
-        "KVDRTEST_db__database": "kvadrotest",
-        "KVDRTEST_db__user": "testuser",
-        "KVDRTEST_db__password": "password",
-        "KVDRTEST_staticFolder": "./staticTest"
+        "KVDRTEST_env": "TEST"
       }
     }
   },
