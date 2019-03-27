@@ -7,39 +7,25 @@
     "start": "better-npm-run start",
     "dev": "better-npm-run dev",
     "seed": "better-npm-run seed",
+    "test": "jest",
     "test:unit": "better-npm-run test:unit",
     "test:e2e": "better-npm-run test:e2e"
   },
   "betterScripts": {
     "start": {
-      "command": "node ./index.js",
-      "env": {
-        "KVDRTEST_env": "PROD"
-      }
+      "command": "node ./index.js"
     },
     "dev": {
-      "command": "nodemon ./index.js",
-      "env": {
-        "KVDRTEST_env": "DEV"
-      }
+      "command": "nodemon ./index.js"
     },
     "seed": {
-      "command": "node ./scripts/seed.js",
-      "env": {
-        "KVDRTEST_env": "SEED"
-      }
+      "command": "node ./scripts/seed.js"
     },
     "test:unit": {
-      "command": "jest unit.spec",
-      "env": {
-        "KVDRTEST_env": "TEST"
-      }
+      "command": "jest .unit"
     },
     "test:e2e": {
-      "command": "jest --runInBand e2e.test",
-      "env": {
-        "KVDRTEST_env": "TEST"
-      }
+      "command": "jest --runInBand e2e.test"
     }
   },
   "eslintConfig": {
@@ -53,12 +39,17 @@
     "overrides": [
       {
         "files": [
-          "**/?(*.)+(test|spec).js"
+          "**/?(*.)+(test|unit).js"
         ],
         "env": {
           "jest": true
         }
       }
+    ]
+  },
+  "jest": {
+    "testMatch": [
+      "**/?(*.)+(test|unit).js"
     ]
   },
   "author": "Smolnikov Andrei",
@@ -73,7 +64,6 @@
     "mysql": "^2.16.0",
     "parse-strings-in-object": "^1.2.0",
     "rc": "^1.2.8",
-    "sqlite3": "^4.0.6",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
