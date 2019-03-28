@@ -4,8 +4,11 @@ const Join = require('./model/join');
 const Where = require('./model/where');
 
 const {
+  QueryBuilderProto,
   SELECT,
   INSERT_INTO,
+  INSERT,
+  INTO,
   UPDATE,
   DELETE,
   FROM,
@@ -16,9 +19,6 @@ const {
   ORDER_BY,
   LIMIT,
   OFFSET,
-  AND,
-  TABLE_FIELD,
-  STAR_FIELD,
   STAR,
   KEYWORD,
   FIELDS_SELECT,
@@ -26,20 +26,22 @@ const {
   JOIN,
 } = require('./model/constants');
 
-const quote = str => `\`${str}\``;
-
+const { quote, checkNumber } = require('./model/helpers');
 const { ServerError, LogicError } = require('../errors');
 
-// const SINGLE_TABLE_SELECT = Symbol('single table select');
-// const MULT_TABLE_SELECT = Symbol('mult table select');
-
-class QueryBuilder {
-  constructor(db) {
+class QueryBuilder extends QueryBuilderProto {
+  constructor(dbQueryFn) {
+    super();
     this.stack = [];
     this.fromArg = null;
     this.params = [];
-    this.insertFields = [];
-    this.db = db;
+    this.insertFields = null;
+    if (dbQueryFn) {
+      if (typeof dbQueryFn !== 'function') {
+        throw new ServerError('input parameter must be a function');
+      }
+      this.dbQueryFn = dbQueryFn;
+    }
     this.state = null;
     this.type = null;
     this.whereConditions = null;
@@ -55,8 +57,7 @@ class QueryBuilder {
     this.params.length = 0;
     this.state = null;
     this.type = null;
-    this.insertFields = [];
-    this.fieldRules = {};
+    this.insertFields = null;
   }
 
   select(fields) {
@@ -78,11 +79,11 @@ class QueryBuilder {
   }
 
   from(fromArg) {
-    if ([SELECT, DELETE, UPDATE].indexOf(this.state) === -1) {
+    if ([SELECT, DELETE, UPDATE, INSERT].indexOf(this.state) === -1) {
       throw new ServerError('incorrect syntax');
     }
     if (
-      [DELETE, UPDATE].indexOf(this.state) !== -1 &&
+      [DELETE, UPDATE, INSERT].indexOf(this.state) !== -1 &&
       !(fromArg instanceof Table)
     ) {
       throw new ServerError('must be a table');
@@ -91,7 +92,7 @@ class QueryBuilder {
       throw new ServerError('incorrect from statement');
     }
 
-    if (this.type !== UPDATE) {
+    if ([UPDATE, INSERT].indexOf(this.type) === -1) {
       this.stack.push([KEYWORD, FROM]);
       this.state = FROM;
     }
@@ -148,63 +149,61 @@ class QueryBuilder {
     return this;
   }
 
-  /*
-  insert() {
-    if (this.state !== null) throw new ServerError();
-    this.state = INSERT_INTO;
-    this.type = this.state;
-    this.stack.push(`${INSERT_INTO} ${this.tables}`);
+  insert(table) {
+    if (this.state !== null) throw new ServerError('bad sequence');
+    this.state = INSERT;
+    this.type = INSERT;
+    this.stack.push([KEYWORD, INSERT_INTO]);
+    this.from(table);
     return this;
   }
 
-  values(fields) {
-    if ([VALUES, INSERT_INTO].indexOf(this.state) === -1)
+  into(fields) {
+    if (this.state !== INSERT) throw new ServerError('bad sequence');
+    if (!Array.isArray(fields)) throw new ServerError('not array value');
+    if (!fields.every(f => f instanceof Field))
+      throw new ServerError('not a fields');
+    this.insertFields = fields;
+    this.stack.push([INTO, fields]);
+    this.state = INTO;
+    return this;
+  }
+
+  values(vals) {
+    if ([VALUES, INTO].indexOf(this.state) === -1) {
       throw new ServerError();
-    if (!fields) throw new ServerError('SQLBuilder. No data to insert');
-
-    if (this.state === VALUES) {
-      const values = [];
-      const namesFields = [];
-      Object.entries(fields).forEach(([key, val]) => {
-        const newKey = this.fieldMap(key);
-        values.push(val);
-        namesFields.push(newKey);
-      });
-
-      if (namesFields.length !== this.insertFields.length) {
-        throw new ServerError('not valid multiple insert');
-      }
-
-      while (namesFields.length) {
-        if (this.insertFields.indexOf(namesFields.pop()) === -1)
-          throw new ServerError('not valid multiple insert');
-      }
-      this.stack.push(`,(${values.map(() => '?').join(', ')})`);
-      this.params.push(...values);
-    } else if (this.state === INSERT_INTO) {
-      this.state = VALUES;
-      this.insertFields = [];
-      const values = [];
-
-      Object.entries(fields).forEach(([key, val]) => {
-        const newKey = this.fieldMap(key);
-        this.insertFields.push(newKey);
-        values.push(val);
-      });
-      this.stack.push(`(${this.insertFields.join(',')})`);
-      this.stack.push(`${VALUES}(${values.map(() => '?').join(', ')})`);
-      this.params.push(...values);
     }
+    if (!vals) {
+      throw new ServerError('SQLBuilder. No data to insert');
+    }
+    if (!Array.isArray(vals)) {
+      throw new ServerError('vals not array');
+    }
+    if (vals.length !== this.insertFields.length)
+      throw new ServerError('length of values and fields liset are not equal');
+
+    const str = `${this.state === VALUES ? ',' : ''}(${vals
+      .map(() => '?')
+      .join(',')})`;
+
+    if (this.state === INTO) {
+      this.state = VALUES;
+      this.stack.push([KEYWORD, VALUES]);
+    }
+
+    this.params.push(...vals);
+    this.stack.push([VALUES, str]);
+
     return this;
   }
-*/
 
   where(conditions) {
     if (conditions === undefined) return this;
     if ([FROM, SET].indexOf(this.state) === -1)
       throw new ServerError('bad sequence');
-    if (!Array.isArray(conditions)) return new ServerError();
-    const where = new Where({ conditions, from: this.fromArg });
+    if (!Array.isArray(conditions))
+      return new ServerError('conditions must be arrays');
+    const where = new Where({ conditions, query: this });
     this.stack.push([WHERE, where]);
     this.params.push(...where.getParams());
     this.state = WHERE;
@@ -212,23 +211,49 @@ class QueryBuilder {
   }
 
   toStringFields({ data, type }) {
-    const fieldsStrings = data.reduce((arr, f) => {
-      if (f.type === STAR_FIELD) {
-        arr.push(STAR);
-      }
-      if (f.type === TABLE_FIELD) {
-        const table = this.fromArg.getAlias(f.table);
-        let str = `${quote(table)}.${quote(f.name)}`;
-        str += f.alias && type === FIELDS_SELECT ? ` as ${quote(f.alias)}` : '';
-        arr.push(str);
-      }
-      return arr;
-    }, []);
-
+    const fieldsStrings = data.map(f => f.getAlias({ query: this, type }));
     return fieldsStrings.join(',');
   }
 
+  groupBy(fields) {
+    if ([FROM, WHERE].indexOf(this.state) === -1) throw new ServerError();
+    if (this.type !== SELECT) throw new ServerError();
+
+    if (fields) {
+      if (!Array.isArray(fields)) {
+        throw new ServerError('parameter is not array');
+      }
+      this.state = GROUP_BY;
+      this.stack.push([KEYWORD, GROUP_BY]);
+      this.stack.push([GROUP_BY, fields]);
+    }
+    return this;
+  }
+
+  orderBy(fields) {
+    if ([FROM, WHERE, GROUP_BY].indexOf(this.state) === -1) {
+      throw new ServerError();
+    }
+    if (this.type !== SELECT) {
+      throw new ServerError();
+    }
+
+    if (fields) {
+      if (!fields.every(f => f instanceof Field)) {
+        throw new ServerError();
+      }
+      this.state = ORDER_BY;
+      this.stack.push([KEYWORD, ORDER_BY]);
+      this.stack.push([ORDER_BY, fields]);
+    }
+    return this;
+  }
+
   toString() {
+    if ([SELECT, INSERT, INTO, UPDATE].indexOf(this.state) !== -1) {
+      throw new ServerError('sql is not ready for sending');
+    }
+
     let str = '';
     const add = arg => {
       str = `${str}${arg}\n`;
@@ -258,65 +283,61 @@ class QueryBuilder {
       if (type === SET) {
         add(data.join(','));
       }
+
+      if (type === INTO) {
+        add(`(${this.toStringFields({ data, type })})`);
+      }
+
+      if (type === ORDER_BY) {
+        add(this.toStringFields({ data, type }));
+      }
+
+      if (type === GROUP_BY) {
+        add(this.toStringFields({ data, type }));
+      }
+
+      if (type === VALUES) {
+        add(data);
+      }
+
+      if (type === LIMIT) {
+        add(data);
+      }
     });
 
     return str;
   }
 
-  groupBy(options) {
-    if ([FROM, WHERE].indexOf(this.state) === -1) throw new ServerError();
-    if (this.type !== SELECT) throw new ServerError();
-
-    if (options) {
-      this.state = GROUP_BY;
-      this.stack.push(GROUP_BY);
-      this.stack.push(options.map(key => this.fieldMap(key)).join(',\n'));
+  limitOffset({ limit, offset }) {
+    if (this.type !== SELECT) {
+      throw new ServerError('limit can be only in slelect statement');
     }
-    return this;
-  }
-  /*
-  orderBy(options) {
-    if ([FROM, WHERE, GROUP_BY].indexOf(this.state) === -1)
-      throw new ServerError();
-    if (this.type !== SELECT) throw new ServerError();
-
-    if (options) {
-      this.state = ORDER_BY;
-      this.stack.push(ORDER_BY);
-      this.stack.push(options.map(key => this.fieldMap(key)).join(',\n'));
+    if ([FROM, WHERE, GROUP_BY, ORDER_BY].indexOf(this.state) === -1) {
+      throw new ServerError('not correct sequence');
     }
-    return this;
-  }
 
-  pagination(options) {
-    if (this.type !== SELECT) throw new ServerError();
-    if ([FROM, WHERE, GROUP_BY, ORDER_BY].indexOf(this.state) === -1)
-      throw new ServerError();
+    if (limit !== undefined) {
+      if (!checkNumber(limit)) throw new LogicError('not correct input data');
+    }
 
-    if (!options) return this;
+    if (offset !== undefined) {
+      if (!checkNumber(limit)) throw new LogicError('not correct input data');
+    }
 
-    const { limit, offset } = options;
-    if (
-      !Number.isInteger(limit) ||
-      !Number.isInteger(offset) ||
-      limit <= 0 ||
-      offset <= 0
-    )
-      throw new LogicError('pagination params is not natural numbers');
-    this.stack.push(`${LIMIT} ${limit}`);
-    this.stack.push(`${OFFSET} ${offset}`);
-    this.state = LIMIT;
+    if (limit) {
+      const str = `${LIMIT} ${limit} ${offset ? `${OFFSET} ${offset}` : ''}`;
+      this.stack.push([LIMIT, str]);
+      this.state = LIMIT;
+    }
 
     return this;
   }
-*/
 
   execute() {
-    if ([INSERT_INTO, UPDATE].indexOf(this.state) !== -1) {
+    if ([SELECT, INSERT, INTO, UPDATE].indexOf(this.state) !== -1) {
       throw new ServerError('sql is not ready for sending');
     }
-
-    return this.query(this.toString(), this.params).then(({ res }) => res);
+    return this.dbQueryFn(this.toString(), this.params).then(({ res }) => res);
   }
 }
 
