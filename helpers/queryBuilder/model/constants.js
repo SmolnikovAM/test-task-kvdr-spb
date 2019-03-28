@@ -18,6 +18,8 @@ const ON = 'on';
 const AND = 'and';
 const SELECT = 'select';
 const INSERT_INTO = 'insert into';
+const INSERT = 'insert';
+const INTO = 'into';
 const UPDATE = 'update';
 const DELETE = 'delete';
 const FROM = 'from';
@@ -29,17 +31,33 @@ const ORDER_BY = 'order by';
 const LIMIT = 'limit';
 const OFFSET = 'offset';
 const STAR = '*';
+const ASC = 'asc';
+const DESC = 'desc';
+
+const DATE_DATA_TYPE = 'date type';
+const DEFAULT_DATE_FORMAT = '%Y-%m-%d';
+
+const GREATER_THAN = '>';
+const LESS_THAN = '<';
+const EQUAL = '=';
+const LIKE = 'like';
 
 class TableProto {}
 class FieldProto {}
 class JoinProto {}
 class WhereProto {}
+class QueryBuilderProto {}
 
 module.exports = {
+  GREATER_THAN,
+  LESS_THAN,
+  LIKE,
+  EQUAL,
   TableProto,
   FieldProto,
   JoinProto,
   WhereProto,
+  QueryBuilderProto,
   KEYWORD,
   FIELDS_SELECT,
   TABLE,
@@ -47,6 +65,8 @@ module.exports = {
   JOIN,
   ON,
   AND,
+  DATE_DATA_TYPE,
+  DEFAULT_DATE_FORMAT,
   ERROR_MSG_BAD_SEQUANCE,
   ERROR_MSG_JOIN_SAME_TABLE,
   ERROR_MSG_BAD_ON_SYNTAX,
@@ -54,6 +74,8 @@ module.exports = {
   TABLE_ALIAS,
   SELECT,
   INSERT_INTO,
+  INSERT,
+  INTO,
   UPDATE,
   DELETE,
   FROM,
@@ -67,4 +89,6 @@ module.exports = {
   TABLE_FIELD,
   STAR_FIELD,
   STAR,
+  ASC,
+  DESC,
 };

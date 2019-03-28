@@ -1,94 +1,109 @@
 const Where = require('./where');
+const { LogicError } = require('../../errors');
 
-const { JoinProto, TableProto, FieldProto } = require('./constants');
-
-const quote = str => `\`${str}\``;
+const { FieldProto, QueryBuilderProto } = require('./constants');
 
 describe('test where statement ', () => {
   const removeSpaces = str => str.toUpperCase().replace(/\s/g, '');
 
   test('single where clause with one condition. from table', () => {
-    const table = new TableProto();
-    const tableName = 'test';
-    table.getAlias = t => (t === table ? tableName : 'bad');
+    const query = new QueryBuilderProto();
     const field = new FieldProto();
-    const fieldName = 'fieldName';
-    field.name = fieldName;
-    field.table = table;
+    field.getAlias = () => '`test`.`fieldName`';
 
-    const from = table;
     const conditions = [[field, 'test value']];
-    const where = new Where({ conditions, from });
+    const where = new Where({ conditions, query });
     const ans = `
-    where ${quote(tableName)}.${quote(fieldName)} = ?    
-    `;
+    where 'test'.'fieldName' = ?    
+    `.replace(/'/g, '`');
 
     expect(removeSpaces(where.toString())).toBe(removeSpaces(ans));
     expect(where.getParams()).toEqual(['test value']);
   });
 
   test('where clause with two conditions. from table', () => {
-    const table = new TableProto();
-    const tableName = 'test';
-    table.getAlias = t => (t === table ? tableName : 'bad');
+    const query = new QueryBuilderProto();
     const field1 = new FieldProto();
     const field2 = new FieldProto();
-    const fieldName1 = 'fieldName';
-    const fieldName2 = 'fieldName';
-    field1.name = fieldName1;
-    field1.table = table;
-    field2.name = fieldName2;
-    field2.table = table;
+    field1.getAlias = () => '`tableName`.`fieldName1`';
+    field2.getAlias = () => '`tableName`.`fieldName2`';
+
     const fieldVal1 = 'test value';
     const fieldVal2 = 54;
-
-    const from = table;
     const conditions = [[field1, fieldVal1], [field2, fieldVal2]];
-    const where = new Where({ conditions, from });
+    const where = new Where({ conditions, query });
     const ans = `
-    where ${quote(tableName)}.${quote(fieldName1)} = ?    
-      and ${quote(tableName)}.${quote(fieldName2)} = ?    
-    `;
+    where 'tableName'.'fieldName1' = ?    
+      and 'tableName'.'fieldName2' = ?    
+    `.replace(/'/g, '`');
 
     expect(removeSpaces(where.toString())).toBe(removeSpaces(ans));
     expect(where.getParams()).toEqual([fieldVal1, fieldVal2]);
   });
 
   test('where clause with two conditions. from two tables', () => {
-    const table1 = new TableProto();
-    const table2 = new TableProto();
-    const tableName1 = 'test1';
-    const tableName2 = 'test1';
-    const join = new JoinProto();
+    const query = new QueryBuilderProto();
+    const [f1, f2, f3, f4] = [0, 0, 0, 0].map(() => new FieldProto());
+    Object.assign(f1, { getAlias: () => '`tableName1`.`f1`' });
+    Object.assign(f2, { getAlias: () => '`tableName1`.`f2`' });
+    Object.assign(f3, { getAlias: () => '`tableName2`.`f3`' });
+    Object.assign(f4, { getAlias: () => '`tableName2`.`f4`' });
 
-    join.getAlias = t => {
-      if (t === table1) return tableName1;
-      if (t === table2) return tableName2;
-    };
-
-    const fieldName = 'fieldName';
-    const f = Array.from({ length: 4 }).map((_, i) => {
-      const field = new FieldProto();
-      field.name = `${fieldName}${i + 1}`;
-      field.table = i % 2 ? table2 : table1;
-      return field;
-    });
-    const [f1, f2, f3, f4] = f;
     const field2Val = 3;
     const field4Val = 'test value';
 
-    const from = join;
     const conditions = [[f1, f3], [f2, field2Val], [f4, field4Val]];
-    const where = new Where({ conditions, from });
+    const where = new Where({ conditions, query });
     const ans = `
-    where ${quote(tableName1)}.${quote('fieldName1')} = ${quote(
-      tableName2,
-    )}.${quote('fieldName3')}    
-      and ${quote(tableName1)}.${quote('fieldName2')} = ?    
-      and ${quote(tableName2)}.${quote('fieldName4')} = ?    
-    `;
+    where 'tableName1'.'f1' = 'tableName2'.'f3'    
+      and 'tableName1'.'f2' = ?    
+      and 'tableName2'.'f4' = ?    
+    `.replace(/'/g, '`');
 
     expect(removeSpaces(where.toString())).toBe(removeSpaces(ans));
     expect(where.getParams()).toEqual([field2Val, field4Val]);
+  });
+
+  test('where clause with different operators', () => {
+    const query = new QueryBuilderProto();
+    const [f1, f2, f3, f4] = [0, 0, 0, 0].map(() => new FieldProto());
+    Object.assign(f1, { getAlias: () => '`tableName1`.`f1`' });
+    Object.assign(f2, { getAlias: () => '`tableName1`.`f2`' });
+    Object.assign(f3, { getAlias: () => '`tableName2`.`f3`' });
+    Object.assign(f4, { getAlias: () => '`tableName2`.`f4`' });
+
+    const field2Val = 'test%';
+    const field4Val1 = 34;
+    const field4Val2 = 20;
+
+    const conditions = [
+      [f1, '=', f3],
+      [f2, 'like', field2Val],
+      [f4, '<', field4Val1],
+      [f4, '>', field4Val2],
+    ];
+    const where = new Where({ conditions, query });
+    const ans = `
+    where 'tableName1'.'f1' = 'tableName2'.'f3'    
+      and 'tableName1'.'f2' like ?    
+      and 'tableName2'.'f4' < ?
+      and 'tableName2'.'f4' > ?    
+    `.replace(/'/g, '`');
+
+    expect(removeSpaces(where.toString())).toBe(removeSpaces(ans));
+    expect(where.getParams()).toEqual([field2Val, field4Val1, field4Val2]);
+  });
+
+  test('not supported operator error', () => {
+    const query = new QueryBuilderProto();
+    const f = new FieldProto();
+    const conditions = [[f, '<=>', '10']];
+    expect.assertions(1);
+    try {
+      // eslint-disable-next-line no-new
+      new Where({ conditions, query });
+    } catch (e) {
+      expect(e).toBeInstanceOf(LogicError);
+    }
   });
 });

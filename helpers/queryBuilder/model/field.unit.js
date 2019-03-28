@@ -16,7 +16,10 @@ describe('test QueryBuilder field', () => {
     const name = 'name';
     const field = new Field({ table, name });
 
-    expect(field).toEqual({ table, name, alias: name, type: TABLE_FIELD });
+    expect(field.table).toBe(table);
+    expect(field.name).toBe(name);
+    expect(field.alias).toBe(name);
+    expect(field.type).toBe(TABLE_FIELD);
   });
 
   test('new field with alias', () => {
@@ -25,12 +28,14 @@ describe('test QueryBuilder field', () => {
     const alias = 'alias';
     const field = new Field({ table, name, alias });
 
-    expect(field).toEqual({ table, name, alias, type: TABLE_FIELD });
+    expect(field.table).toBe(table);
+    expect(field.name).toBe(name);
+    expect(field.alias).toBe(alias);
+    expect(field.type).toBe(TABLE_FIELD);
   });
 
   test('new field with alias', () => {
     const field = new Field(STAR);
-
     expect(field).toEqual({ alias: null, type: STAR_FIELD });
   });
 

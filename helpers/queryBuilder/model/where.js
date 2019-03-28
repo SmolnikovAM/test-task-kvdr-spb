@@ -1,20 +1,47 @@
-const { WhereProto, AND, FieldProto, WHERE } = require('./constants');
+const {
+  WhereProto,
+  QueryBuilderProto,
+  FieldProto,
+  AND,
+  WHERE,
+  EQUAL,
+  LIKE,
+  GREATER_THAN,
+  LESS_THAN,
+} = require('./constants');
 
-const { ServerError } = require('../../errors');
-
-const quote = str => `\`${str}\``;
+const { ServerError, LogicError } = require('../../errors');
 
 class Where extends WhereProto {
-  constructor({ conditions, from }) {
+  constructor({ conditions, query }) {
     super();
-    this.from = from;
+    this.query = query;
     this.params = [];
 
+    if (!(query instanceof QueryBuilderProto)) {
+      throw new ServerError('input parameter mistake');
+    }
+
     this.conditions = conditions.map(condition => {
-      if (!Array.isArray(condition) || condition.length < 2)
+      if (
+        !Array.isArray(condition) ||
+        condition.length < 2 ||
+        condition.length > 3
+      ) {
         throw new ServerError('not valid condition');
+      }
       let first = condition[0];
       let last = condition[condition.length - 1];
+      let operator = EQUAL;
+
+      if (condition.length === 3) {
+        operator = [EQUAL, LIKE, GREATER_THAN, LESS_THAN].find(
+          op => op.toUpperCase() === condition[1].toUpperCase(),
+        );
+        if (!operator) {
+          throw new LogicError('not supported operator');
+        }
+      }
 
       if (!(first instanceof FieldProto)) {
         this.params.push(first);
@@ -25,7 +52,7 @@ class Where extends WhereProto {
         this.params.push(last);
         last = '?';
       }
-      return [first, last];
+      return [first, operator, last];
     });
   }
 
@@ -34,19 +61,17 @@ class Where extends WhereProto {
   }
 
   toString() {
+    const { query } = this;
     const cond = this.conditions.map(condition => {
-      let first = condition[0];
-      let last = condition[condition.length - 1];
-      const createAlias = field =>
-        `${quote(this.from.getAlias(field.table))}.${quote(field.name)}`;
-
+      // eslint-disable-next-line prefer-const
+      let [first, operator, last] = condition;
       if (first instanceof FieldProto) {
-        first = createAlias(first);
+        first = first.getAlias({ query });
       }
       if (last instanceof FieldProto) {
-        last = createAlias(last);
+        last = last.getAlias({ query });
       }
-      return `${first} = ${last}`;
+      return `${first} ${operator} ${last}`;
     });
     let str = WHERE;
     str += '\n';
