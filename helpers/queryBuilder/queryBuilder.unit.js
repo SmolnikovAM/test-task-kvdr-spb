@@ -5,8 +5,6 @@ const { TABLE_ALIAS, DEFAULT_DATE_FORMAT } = require('./model/constants');
 describe('simple queries', () => {
   const removeSpaces = str => str.toUpperCase().replace(/\s/g, '');
 
-  //   const tablesString = `${TABLE_BOOKS} left join ${TABLE_AUTHORS} on ${TABLE_BOOKS}.author_id = ${TABLE_AUTHORS}.id`;
-
   test('select * from table', () => {
     const table = new Table('table');
     const query = new QueryBuilder();
