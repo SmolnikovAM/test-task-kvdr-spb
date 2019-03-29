@@ -13,7 +13,10 @@
   },
   "betterScripts": {
     "start": {
-      "command": "node ./index.js"
+      "command": "node ./index.js",
+      "env": {
+        "NODE_ENV": "production"
+      }
     },
     "dev": {
       "command": "nodemon ./index.js"
