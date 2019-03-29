@@ -2,19 +2,11 @@ const mysql = require('mysql');
 const config = require('../config');
 const { ServerError } = require('../helpers/errors');
 
-const connection = mysql.createConnection(
-  config.db,
-  //   {
-  //   host: 'localhost',
-  //   user: '',
-  //   password: '',
-  //   database: '',
-  // }
-);
+const connection = mysql.createConnection(config.db);
 
 connection.connect();
 
-const query = (...arg) =>
+const dbQueryFn = (...arg) =>
   new Promise((res, rej) => {
     const callback = (error, results, fields) => {
       if (error) {
@@ -35,4 +27,4 @@ const query = (...arg) =>
     }
   });
 
-module.exports = { connection, query };
+module.exports = { connection, dbQueryFn };
