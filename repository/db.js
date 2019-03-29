@@ -6,8 +6,8 @@ const connection = mysql.createConnection(config.db);
 
 connection.connect();
 
-const dbQueryFn = (...arg) =>
-  new Promise((res, rej) => {
+const dbQueryFn = (...arg) => {
+  return new Promise((res, rej) => {
     const callback = (error, results, fields) => {
       if (error) {
         rej(error);
@@ -15,6 +15,7 @@ const dbQueryFn = (...arg) =>
         res({ res: results, fields });
       }
     };
+
     if (arg.length === 1) {
       connection.query(arg[0], callback);
     }
@@ -26,5 +27,6 @@ const dbQueryFn = (...arg) =>
       throw new ServerError('too many args');
     }
   });
+};
 
 module.exports = { connection, dbQueryFn };
