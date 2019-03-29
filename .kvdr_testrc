@@ -1,0 +1,11 @@
+{
+  "port": 3000,
+  "timeToDelete": 3600000,
+  "staticFolder": "./staticTest",
+  "db": {
+    "host": "localhost",
+    "database": "kvadrotest",
+    "user": "testuser",
+    "password": "password"
+  }
+}

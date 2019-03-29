@@ -1,21 +1,22 @@
 const rc = require('rc');
 const parseSettings = require('parse-strings-in-object');
 
-const APP_NAME = 'KVDRTEST';
+let appName;
 
-const config = parseSettings(
-  rc(APP_NAME, {
-    port: 3000,
-    env: 'NOT SET',
-    timeToDelete: 60 * 60 * 1000,
-    staticFolder: './static',
-    db: {
-      host: 'hostAddressNotSet',
-      database: 'databaseNotSet',
-      user: 'userNotset',
-      password: 'passwordNotSet',
-    },
-  }),
-);
+switch (process.env.NODE_ENV) {
+  case 'production':
+    appName = 'kvdr_prod';
+    break;
+  case 'test':
+    appName = 'kvdr_test';
+    break;
+  case 'development':
+    appName = 'kvdr_dev';
+    break;
+  default:
+    appName = 'kvdr_dev';
+}
+
+const config = parseSettings(rc(appName));
 
 module.exports = config;
