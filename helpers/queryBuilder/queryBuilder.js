@@ -4,6 +4,7 @@ const Join = require('./model/join');
 const Where = require('./model/where');
 
 const {
+  SQLCONST,
   QueryBuilderProto,
   SELECT,
   INSERT_INTO,
@@ -198,7 +199,7 @@ class QueryBuilder extends QueryBuilderProto {
   }
 
   where(conditions) {
-    if (conditions === undefined) return this;
+    if (!conditions) return this;
     if ([FROM, SET].indexOf(this.state) === -1)
       throw new ServerError('bad sequence');
     if (!Array.isArray(conditions))
@@ -334,11 +335,11 @@ class QueryBuilder extends QueryBuilderProto {
   }
 
   execute() {
-    if ([SELECT, INSERT, INTO, UPDATE].indexOf(this.state) !== -1) {
+    if ([SELECT, INSERT, INTO, UPDATE, DELETE].indexOf(this.state) !== -1) {
       throw new ServerError('sql is not ready for sending');
     }
     return this.dbQueryFn(this.toString(), this.params).then(({ res }) => res);
   }
 }
 
-module.exports = { QueryBuilder, Table, Field };
+module.exports = { QueryBuilder, Table, Field, SQLCONST };

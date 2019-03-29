@@ -48,7 +48,7 @@ class JoinProto {}
 class WhereProto {}
 class QueryBuilderProto {}
 
-module.exports = {
+const SQLCONST = {
   GREATER_THAN,
   LESS_THAN,
   LIKE,
@@ -92,3 +92,7 @@ module.exports = {
   ASC,
   DESC,
 };
+
+SQLCONST.SQLCONST = SQLCONST;
+
+module.exports = SQLCONST;
