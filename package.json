@@ -19,7 +19,8 @@
       }
     },
     "dev": {
-      "command": "nodemon ./index.js"
+      "command": "nodemon ./index.js",
+      "NODE_ENV": "development"
     },
     "seed": {
       "command": "node ./scripts/seed.js"
