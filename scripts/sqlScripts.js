@@ -1,10 +1,21 @@
+const deleteTableAuthors = 'drop table if exists `authors`';
+
+const createTableAuthors = `
+create table if not exists 'authors'(
+  'id' int not null auto_increment,
+  'name' varchar(30),
+  primary key(id)
+);`.replace(/'/g, '`'); // for clear reading of script whithout \`tableName\`
+
+module.exports = { deleteTableAuthors, createTableAuthors };
+
+/*
 const authorsCreateScript = `
 create table if not exists authors(
   id int not null auto_increment,
   name varchar(300),
   primary key (id)
 )`;
-const authorsDelete = 'drop table if exists authors';
 
 const booksCreateScript = `
 create table if not exists books(
@@ -18,7 +29,7 @@ create table if not exists books(
   primary key(id)
   )`;
 const booksDelete = 'drop table if exists books';
-
+*/
 /*
 const newVar = `
 create table books(
@@ -55,7 +66,6 @@ insert into `book_authors`(book_id, author_id) values (2, 3);
 
 
 `;
-*/
 
 module.exports = {
   authorsCreateScript,
@@ -63,3 +73,5 @@ module.exports = {
   booksCreateScript,
   booksDelete,
 };
+
+*/

@@ -1,6 +1,37 @@
 /* eslint-disable */
-const { connection, query } = require('../repository/db');
-const QueryBuilder = require('../helpers/queryBuilder');
+const { connection, dbQueryFn } = require('../repository/db');
+const { QueryBuilder, Table } = require('../helpers/queryBuilder');
+
+const { createTableAuthors, deleteTableAuthors } = require('./sqlScripts');
+
+const authorsTable = new Table('authors');
+const aurhorsFields = [authorsTable.field('id'), authorsTable.field('name')];
+
+async function createScheema() {
+  await dbQueryFn(deleteTableAuthors);
+  await dbQueryFn(createTableAuthors);
+  await new QueryBuilder(dbQueryFn)
+    .delete()
+    .from(authorsTable)
+    .execute();
+}
+
+async function seed(options) {
+  await createScheema();
+
+  await new QueryBuilder(dbQueryFn)
+    .insert(authorsTable)
+    .into(aurhorsFields)
+    .values([1, 'test1'])
+    .values([2, 'test2'])
+    .values([3, 'test3'])
+    .values([4, 'test4'])
+    .values([5, 'testForLikeOperator5'])
+    .values([6, 'testForSomething'])
+    .execute();
+}
+
+/*
 const {
   authorsCreateScript,
   authorsDelete,
@@ -82,6 +113,8 @@ async function seed(options) {
 
   await insertBooks.send();
 }
+
+*/
 
 if (!module.parent) {
   seed({ logFlag: true }).then(() => connection.end());
