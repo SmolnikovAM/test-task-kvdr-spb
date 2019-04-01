@@ -1,11 +1,16 @@
 const { dbQueryFn } = require('./db');
 const { ServerError, LogicError } = require('../helpers/errors');
-const { Field, QueryBuilder, SQLCONST } = require('../helpers/queryBuilder');
+const {
+  Table,
+  Field,
+  QueryBuilder,
+  SQLCONST,
+} = require('../helpers/queryBuilder');
 
 class Repository {
-  constructor({ table, map, strictMode }) {
+  constructor({ from, map, strictMode }) {
     this.dbQueryFn = dbQueryFn;
-    this.table = table;
+    this.from = from;
     this.map = map;
     this.strictMode = strictMode;
 
@@ -36,8 +41,14 @@ class Repository {
   }
 
   mapField(key, query) {
-    const { alias, field } = this.mapFieldNames(key);
-    return this.table.field(field).as(alias, query);
+    const { alias, field, table } = this.mapFieldNames(key);
+    if (!table) {
+      if (!(this.from instanceof Table)) {
+        throw new ServerError('must be a table');
+      }
+      return this.from.field(field).as(alias, query);
+    }
+    return table.field(field).as(alias, query);
   }
 
   async find(options) {
@@ -64,7 +75,7 @@ class Repository {
 
     return query
       .select(fields)
-      .from(this.table)
+      .from(this.from)
       .where(conditions)
       .limitOffset(pagination)
       .execute();
