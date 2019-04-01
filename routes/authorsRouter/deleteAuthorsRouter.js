@@ -1,11 +1,11 @@
 const Router = require('koa-router');
-
-// const { BadRequestError, LogicError } = require('../../helpers/errors');
+const authorRepository = require('../../repository/authorsRepository');
 
 const router = new Router();
 
 router.delete('/:id', async ctx => {
-  ctx.body = { delete: 'ok' };
+  const id = Number(ctx.params.id);
+  ctx.body = await authorRepository.eraseById({ id });
 });
 
 module.exports = router;

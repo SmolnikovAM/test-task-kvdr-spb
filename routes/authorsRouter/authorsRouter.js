@@ -1,16 +1,16 @@
 const Router = require('koa-router');
-const getAuthorRouter = require('./getAuthorsRouter');
-const postAuthorRouter = require('./postAuthorsRouter');
-const patchAuthorRouter = require('./patchAuthorsRouter');
-const deleteAuthorRouter = require('./deleteAuthorsRouter');
+const getAuthorsRouter = require('./getAuthorsRouter');
+const postAuthorsRouter = require('./postAuthorsRouter');
+const patchAuthorsRouter = require('./patchAuthorsRouter');
+const deleteAuthorsRouter = require('./deleteAuthorsRouter');
 
 const router = new Router();
 
 [
-  getAuthorRouter,
-  postAuthorRouter,
-  patchAuthorRouter,
-  deleteAuthorRouter,
+  getAuthorsRouter,
+  postAuthorsRouter,
+  patchAuthorsRouter,
+  deleteAuthorsRouter,
 ].forEach(r => router.use(r.routes(), r.allowedMethods()));
 
 module.exports = router;
