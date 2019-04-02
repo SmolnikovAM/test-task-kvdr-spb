@@ -14,7 +14,7 @@ describe('working with aurhors route', () => {
     // };
     // encodeURI(JSON.stringify(a))
     // '%7B%22conditions%22:%7B%22id%22:%7B%22operator%22:%22%3E%22,%22value%22:%222%22%7D%7D,%22pagination%22:%7B%22limit%22:3,%22offset%22:2%7D%7D'
-    // http get localhost:3000/authors/all/%7B%22conditions%22:%7B%22id%22:%7B%22operator%22:%22%3E%22,%22value%22:%222%22%7D%7D,%22pagination%22:%7B%22limit%22:3,%22offset%22:2%7D%7D
+    // http get localhost:3000/authors/query/%7B%22conditions%22:%7B%22id%22:%7B%22operator%22:%22%3E%22,%22value%22:%222%22%7D%7D,%22pagination%22:%7B%22limit%22:3,%22offset%22:2%7D%7D
   });
 
   test('update authors', () => {});
