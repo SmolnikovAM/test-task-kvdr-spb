@@ -1,42 +1,27 @@
 const Koa = require('koa');
-const Router = require('koa-router');
 const koaStaticMiddleware = require('koa-static');
+const router = require('./routes');
+const createRepository = require('./repository');
 const config = require('./config');
-const authorsRouter = require('./routes/authorsRouter');
-// const bookRouter = require('./routes/books');
 // const cacheService = require('./services/cacheService');
 
-function createApp() {
+function createApp(db) {
   const app = new Koa();
-  const mainRouter = new Router();
+  app.context.repository = createRepository(db.createQueryFn());
 
-  mainRouter.get('/test', ctx => {
-    ctx.body = { message: 'test ok' };
-  });
-
-  mainRouter.use(
-    '/authors',
-    authorsRouter.routes(),
-    authorsRouter.allowedMethods(),
-  );
-
-  // app.use(async (ctx, next) => {
-  //   await next();
-  //   if (
-  //     ctx.status === 200 &&
-  //     ['POST', 'DELETE', 'UPDATE', 'PUT'].indexOf(ctx.req.method) !== -1
-  //   ) {
-  //     cacheService.clear();
-  //   }
-  // });
-
-  // mainRouter.use('/books', bookRouter.routes(), bookRouter.allowedMethods());
-
-  app.use(mainRouter.allowedMethods());
-  app.use(mainRouter.routes());
+  app.use(router.routes());
+  app.use(router.allowedMethods());
   app.use(koaStaticMiddleware(config.staticFolder));
 
   return app;
+}
+
+if (!module.parent) {
+  createApp().listen(
+    config.port,
+    () => global.console.log(`Application started on port ${config.port}`),
+    global.console.log(`NODE_ENV = ${process.env.NODE_ENV}`),
+  );
 }
 
 module.exports = createApp;
