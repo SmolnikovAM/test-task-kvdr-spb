@@ -309,7 +309,11 @@ class QueryBuilder extends QueryBuilderProto {
     return str;
   }
 
-  limitOffset({ limit, offset }) {
+  limitOffset(options) {
+    if (!options) return this;
+
+    const { limit, offset } = options;
+
     if (this.type !== SELECT) {
       throw new ServerError('limit can be only in slelect statement');
     }
