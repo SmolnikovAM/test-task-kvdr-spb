@@ -1,4 +1,10 @@
-const { ServerError, LogicError } = require('../helpers/errors');
+const {
+  ServerError,
+  LogicError,
+  BadRequestError,
+  MYSQL_ERRORS,
+} = require('../helpers/errors');
+
 const {
   Table,
   Field,
@@ -113,11 +119,20 @@ class Repository {
       },
       { fields: [], values: [] },
     );
-    return query
-      .insert(this.table)
-      .into(fields)
-      .values(values)
-      .execute();
+
+    try {
+      const res = await query
+        .insert(this.table)
+        .into(fields)
+        .values(values)
+        .execute();
+      return res;
+    } catch (e) {
+      if (e.code === MYSQL_ERRORS.ER_DUP_ENTRY) {
+        throw new BadRequestError('Duplicate entry');
+      }
+      throw e;
+    }
   }
 
   eraseById({ id }) {

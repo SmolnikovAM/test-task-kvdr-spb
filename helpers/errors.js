@@ -1,3 +1,7 @@
+const MYSQL_ERRORS = {
+  ER_DUP_ENTRY: 'ER_DUP_ENTRY',
+};
+
 function convert(message) {
   let textMsg = '';
   if (typeof message === 'object') {
@@ -12,14 +16,14 @@ function convert(message) {
   return textMsg;
 }
 
-// export class NotFoundError extends Error {
-//   constructor(message) {
-//     const textMsg = `Error: Not Found\n${convert(message)}`;
-//     super(textMsg);
-//     this.status = 404;
-//     this.expose = true;
-//   }
-// }
+class NotFoundError extends Error {
+  constructor(message) {
+    const textMsg = `Error: Not Found\n${convert(message)}`;
+    super(textMsg);
+    this.status = 404;
+    this.expose = true;
+  }
+}
 
 class ServerError extends Error {
   constructor(message) {
@@ -48,4 +52,10 @@ class BadRequestError extends Error {
   }
 }
 
-module.exports = { BadRequestError, LogicError, ServerError };
+module.exports = {
+  MYSQL_ERRORS,
+  NotFoundError,
+  BadRequestError,
+  LogicError,
+  ServerError,
+};
