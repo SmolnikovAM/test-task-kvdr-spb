@@ -63,22 +63,35 @@ class Repository {
     conditions: inputConditions,
     fields: inputFields,
     pagination,
-    // group,
-    // order,
+    group: inputGroup,
+    order: inputOrder,
   }) {
     let conditions = null;
     let fields = null;
+    let group = null;
+    let order = null;
     const query = new QueryBuilder(this.queryFn);
 
+    if (inputGroup) {
+      group = inputFields.map(f => this.mapField(f));
+    }
+
+    if (inputOrder) {
+      order = inputOrder.map(f => this.mapField(f));
+    }
+
     if (inputConditions) {
-      conditions = Object.entries(inputConditions).map(([key, vals]) => {
-        const field = this.mapField(key, query);
-        if (typeof vals === 'object') {
-          const { operator, value } = vals;
-          return [field, operator, value];
-        }
-        return [field, vals];
-      });
+      conditions = inputConditions.reduce((a, cond) => {
+        const newCond = Object.entries(cond).map(([key, vals]) => {
+          const field = this.mapField(key, query);
+          if (typeof vals === 'object') {
+            const { operator, value } = vals;
+            return [field, operator, value];
+          }
+          return [field, vals];
+        });
+        return [...a, ...newCond];
+      }, []);
     }
 
     if (inputFields) {
@@ -91,6 +104,8 @@ class Repository {
       .select(fields)
       .from(this.from)
       .where(conditions)
+      .groupBy(group)
+      .orderBy(order)
       .limitOffset(pagination)
       .execute();
   }
