@@ -1,29 +1,19 @@
-const supertest = require('supertest');
-const http = require('http');
-const { createDB } = require('./testHeplers');
+const { createDB, createTestApp, encode, dropDBs } = require('./testHeplers');
 const { seed } = require('../scripts/seed');
 const config = require('../config');
 const createApp = require('../app');
-
-function createTestApp(db) {
-  return supertest.agent(http.createServer(createApp(db).callback()));
-}
-
-function encode(data) {
-  return typeof obj === 'object'
-    ? encodeURI(JSON.stringify(data))
-    : encodeURI(data);
-}
 
 // const a = {
 //   conditions: { id: { operator: '>', value: '2' } },
 //   pagination: { limit: 3, offset: 2 },
 // };
 
+afterAll(() => dropDBs(config));
+
 describe('working with authors routing', () => {
   test('append / double append / read author', async () => {
     const { db, endTest } = await createDB(config);
-    const app = createTestApp(db);
+    const app = createTestApp({ db, createApp });
     const urlData = encode('testName');
     // no data befor
     await app
@@ -54,7 +44,7 @@ describe('working with authors routing', () => {
 
   test('delete / read author', async () => {
     const { queryFn, db, endTest } = await createDB(config);
-    const app = createTestApp(db);
+    const app = createTestApp({ db, createApp });
     const authorsFixtures = [['testName0'], ['testName1']];
     seed({ queryFn, options: { authorsFixtures } });
     const urlData = encode('testName1');
@@ -76,7 +66,7 @@ describe('working with authors routing', () => {
 
   test('modify / read author', async () => {
     const { queryFn, db, endTest } = await createDB(config);
-    const app = createTestApp(db);
+    const app = createTestApp({ db, createApp });
     const authorsFixtures = [['testName']];
     seed({ queryFn, options: { authorsFixtures } });
     const {
