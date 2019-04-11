@@ -4,7 +4,8 @@
   "staticFolder": "./staticTest",
   "db": {
     "host": "localhost",
-    "database": "kvadrotest",
+    "database": "",
+    "port": 3306,
     "user": "testuser",
     "password": "password"
   }

@@ -4,8 +4,15 @@
   "staticFolder": "./staticTest",
   "db": {
     "host": "localhost",
-    "database": "kvadrotest",
+    "database": "",
+    "port": 3306,
     "user": "testuser",
+    "password": "password"
+  },
+  // for creating test databases and grant privileges to db user
+  // grant create, drop, grant option, reload, insert, select, update, delete on *.* to 'superuser'@'localhost';
+  "dbAdminUser": {
+    "user": "superuser",
     "password": "password"
   }
 }

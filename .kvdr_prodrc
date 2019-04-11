@@ -5,6 +5,7 @@
   "db": {
     "host": "localhost",
     "database": "kvadro",
+    "port": 3306,
     "user": "testuser",
     "password": "password"
   }
