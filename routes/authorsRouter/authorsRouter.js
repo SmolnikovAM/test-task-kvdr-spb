@@ -5,7 +5,6 @@ const patchAuthorsRouter = require('./patchAuthorsRouter');
 const deleteAuthorsRouter = require('./deleteAuthorsRouter');
 
 const router = new Router();
-
 [
   getAuthorsRouter,
   postAuthorsRouter,
