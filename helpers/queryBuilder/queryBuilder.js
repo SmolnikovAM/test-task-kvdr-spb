@@ -217,6 +217,7 @@ class QueryBuilder extends QueryBuilderProto {
   }
 
   groupBy(fields) {
+    if (!fields) return this;
     if ([FROM, WHERE].indexOf(this.state) === -1) throw new ServerError();
     if (this.type !== SELECT) throw new ServerError();
 
@@ -232,6 +233,7 @@ class QueryBuilder extends QueryBuilderProto {
   }
 
   orderBy(fields) {
+    if (!fields) return this;
     if ([FROM, WHERE, GROUP_BY].indexOf(this.state) === -1) {
       throw new ServerError();
     }

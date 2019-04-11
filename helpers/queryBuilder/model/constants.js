@@ -48,7 +48,10 @@ class JoinProto {}
 class WhereProto {}
 class QueryBuilderProto {}
 
+const OPERATORS_PATTERN = `^(\\${EQUAL}|${LIKE}|\\${GREATER_THAN}|\\${LESS_THAN})$`;
+
 const SQLCONST = {
+  OPERATORS_PATTERN,
   GREATER_THAN,
   LESS_THAN,
   LIKE,
