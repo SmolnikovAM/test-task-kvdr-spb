@@ -3,8 +3,9 @@ const deleteTableAuthors = 'drop table if exists `authors`';
 const createTableAuthors = `
 create table if not exists 'authors'(
   'id' int not null auto_increment,
-  'name' varchar(30),
-  primary key(id)
+  'name' varchar(50),
+  primary key('id'),
+  unique key('name')  
 );`.replace(/'/g, '`'); // for clear reading of script whithout \`tableName\`
 
 module.exports = { deleteTableAuthors, createTableAuthors };
