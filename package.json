@@ -7,20 +7,36 @@
     "start": "better-npm-run start",
     "dev": "better-npm-run dev",
     "seed": "better-npm-run seed",
+    "create-tables-dev": "better-npm-run create-tables-dev",
+    "create-tables-prod": "better-npm-run create-tables-prod",
     "test": "jest",
     "test:unit": "better-npm-run test:unit",
     "test:e2e": "better-npm-run test:e2e"
   },
   "betterScripts": {
     "start": {
-      "command": "node ./index.js",
+      "command": "node ./app.js",
       "env": {
         "NODE_ENV": "production"
       }
     },
     "dev": {
-      "command": "nodemon ./index.js",
-      "NODE_ENV": "development"
+      "command": "nodemon ./app.js",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "create-tables-dev": {
+      "command": "node ./scritps/createSchema.js",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "create-tables-prod": {
+      "command": "node ./scritps/createSchema.js",
+      "env": {
+        "NODE_ENV": "production"
+      }
     },
     "seed": {
       "command": "node ./scripts/seed.js"
@@ -29,7 +45,7 @@
       "command": "jest .unit"
     },
     "test:e2e": {
-      "command": "jest --runInBand e2e.test"
+      "command": "jest .e2e"
     }
   },
   "eslintConfig": {
