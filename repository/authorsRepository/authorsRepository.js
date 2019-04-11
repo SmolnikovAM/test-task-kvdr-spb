@@ -1,6 +1,5 @@
+const Repository = require('../repositoryClass');
 const { Table } = require('../../helpers/queryBuilder');
-
-const Repository = require('../repository');
 
 const authorsTable = new Table('authors');
 
@@ -9,4 +8,10 @@ const map = new Map([
   ['author', { alias: 'author', field: 'name', authorsTable }],
 ]);
 
-module.exports = new Repository({ from: authorsTable, map });
+class AuthorsRepository extends Repository {
+  constructor(queryFn) {
+    super({ queryFn, from: authorsTable, map });
+  }
+}
+
+module.exports = AuthorsRepository;
