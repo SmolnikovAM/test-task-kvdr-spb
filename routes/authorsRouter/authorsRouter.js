@@ -1,12 +1,14 @@
 const Router = require('koa-router');
-const getAuthorsRouter = require('./getAuthorsRouter');
+const getAuthorsByFieldRouter = require('./getAuthorsByFieldRouter');
+const getAuthorsQueryRouter = require('./getAuthorsQueryRouter');
 const postAuthorsRouter = require('./postAuthorsRouter');
 const patchAuthorsRouter = require('./patchAuthorsRouter');
 const deleteAuthorsRouter = require('./deleteAuthorsRouter');
 
 const router = new Router();
 [
-  getAuthorsRouter,
+  getAuthorsByFieldRouter,
+  getAuthorsQueryRouter,
   postAuthorsRouter,
   patchAuthorsRouter,
   deleteAuthorsRouter,
