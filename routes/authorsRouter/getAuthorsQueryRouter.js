@@ -17,11 +17,10 @@ const fieldsPattern = {
 
 const conditionPattern = {
   anyOf: [
-    {
-      type: 'string',
-    },
+    { type: 'string' },
     {
       type: 'object',
+      additionalProperties: false,
       properties: {
         operator: {
           type: 'string',
@@ -33,8 +32,23 @@ const conditionPattern = {
   ],
 };
 
+const oderByPattern = {
+  anyOf: [
+    { type: 'string' },
+    {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        field: { type: 'string' },
+        direction: { type: 'string', pattern: '^(asc|desc)$' },
+      },
+    },
+  ],
+};
+
 const getAuthorsQuerySchema = {
   type: 'object',
+  additionalProperties: false,
   properties: {
     fields: fieldsPattern,
     group: fieldsPattern,
@@ -50,9 +64,13 @@ const getAuthorsQuerySchema = {
         },
       ],
     },
-    order: fieldsPattern,
+    order: {
+      type: 'array',
+      items: [oderByPattern],
+    },
     pagination: {
       type: 'object',
+      additionalProperties: false,
       properties: {
         limit: { type: 'integer', minimum: 1 },
         offset: { type: 'integer', minimum: 1 },
