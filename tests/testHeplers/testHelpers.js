@@ -13,21 +13,23 @@ function createTestApp({ db, createApp }) {
 }
 
 function encode(data) {
-  return typeof obj === 'object'
+  return typeof data === 'object'
     ? encodeURI(JSON.stringify(data))
     : encodeURI(data);
 }
 
 async function dropDBs(config) {
-  const { user, password } = config.dbAdminUser;
-  const db = new DB({ ...config.db, user, password });
-  const queryFn = db.createQueryFn();
-  const d = [...databasesToDrop];
-  for (let i = 0; i < d.length; i += 1) {
-    // eslint-disable-next-line
-    await queryFn(`drop database \`${d[i]}\`;`);
+  if (databasesToDrop.size > 0) {
+    const { user, password } = config.dbAdminUser;
+    const db = new DB({ ...config.db, user, password });
+    const queryFn = db.createQueryFn();
+    const d = [...databasesToDrop];
+    for (let i = 0; i < d.length; i += 1) {
+      // eslint-disable-next-line
+      await queryFn(`drop database \`${d[i]}\`;`);
+    }
+    db.close();
   }
-  db.close();
 }
 
 async function createDB(config) {
