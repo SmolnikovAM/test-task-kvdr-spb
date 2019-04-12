@@ -12,6 +12,10 @@ const {
   SQLCONST,
 } = require('../helpers/queryBuilder');
 
+function equal(s1, s2) {
+  return s1.toLowerCase() === s2.toLowerCase();
+}
+
 class Repository {
   constructor({ from, table, map, strictMode, queryFn }) {
     this.from = from || table;
@@ -73,11 +77,23 @@ class Repository {
     const query = new QueryBuilder(this.queryFn);
 
     if (inputGroup) {
-      group = inputFields.map(f => this.mapField(f));
+      group = inputFields.map(f => this.mapField(f, query));
     }
 
     if (inputOrder) {
-      order = inputOrder.map(f => this.mapField(f));
+      order = inputOrder.map(data => {
+        if (typeof data === 'string') {
+          return this.mapField(data, query);
+        }
+        const { field, direction } = data;
+        if (equal(direction, SQLCONST.ASC)) {
+          return this.mapField(field, query).asc(query);
+        }
+        if (equal(direction, SQLCONST.DESC)) {
+          return this.mapField(field, query).desc(query);
+        }
+        return this.mapField(field, query);
+      });
     }
 
     if (inputConditions) {
@@ -95,7 +111,7 @@ class Repository {
     }
 
     if (inputFields) {
-      fields = inputFields.map(f => this.mapField(f));
+      fields = inputFields.map(f => this.mapField(f, query));
     } else {
       fields = [new Field(SQLCONST.STAR)];
     }
