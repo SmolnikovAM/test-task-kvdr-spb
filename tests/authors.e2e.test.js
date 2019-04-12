@@ -3,14 +3,9 @@ const { seed } = require('../scripts/seed');
 const config = require('../config');
 const createApp = require('../app');
 
-// const a = {
-//   conditions: { id: { operator: '>', value: '2' } },
-//   pagination: { limit: 3, offset: 2 },
-// };
-
 afterAll(() => dropDBs(config));
 
-describe('working with authors routing', () => {
+describe('working with authors CRUD routing', () => {
   test('append / double append / read author', async () => {
     const { db, endTest } = await createDB(config);
     const app = createTestApp({ db, createApp });
@@ -31,13 +26,14 @@ describe('working with authors routing', () => {
       .send({ author: 'testName' })
       .expect(400);
     // get by name
-    let res = await app.get(`/authors/by-author/${urlData}`).expect(200);
-    const { author, id } = res.body;
+    const {
+      body: { author, id },
+    } = await app.get(`/authors/by-author/${urlData}`).expect(200);
+
     expect(author).toBe('testName');
     expect(typeof id).toBe('number');
     // get by id from previous request
-    res = await app.get(`/authors/by-id/${id}`).expect(200);
-    expect(res.body).toEqual({ author, id });
+    app.get(`/authors/by-id/${id}`).expect(200, { author, id });
     // end connection
     await endTest();
   });
@@ -87,13 +83,10 @@ describe('working with authors routing', () => {
       .send()
       .expect(404);
     // new name avaliable
-    const res = await app
+    await app
       .get(`/authors/by-author/newTestName`)
       .send()
-      .expect(200);
-    // id not changed
-    expect(res.body.author).toBe('newTestName');
-    expect(res.body.id).toBe(id);
+      .expect(200, { author: 'newTestName', id });
 
     await endTest();
   });
