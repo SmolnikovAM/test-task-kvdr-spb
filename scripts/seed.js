@@ -1,35 +1,30 @@
-/* eslint-disable */
-const { connection, dbQueryFn } = require('../repository/db');
 const { QueryBuilder, Table } = require('../helpers/queryBuilder');
-
-const { createTableAuthors, deleteTableAuthors } = require('./sqlScripts');
+const config = require('../config');
+const DB = require('../db');
 
 const authorsTable = new Table('authors');
-const aurhorsFields = [authorsTable.field('id'), authorsTable.field('name')];
+const aurhorsFields = [authorsTable.field('name')];
 
-async function createScheema() {
-  await dbQueryFn(deleteTableAuthors);
-  await dbQueryFn(createTableAuthors);
-  await new QueryBuilder(dbQueryFn)
-    .delete()
-    .from(authorsTable)
-    .execute();
+async function seed({ queryFn, options }) {
+  const { authorsFixtures } = options || {};
+
+  if (authorsFixtures) {
+    const query = new QueryBuilder(queryFn)
+      .insert(authorsTable)
+      .into(aurhorsFields);
+    authorsFixtures.forEach(row => {
+      query.values(row);
+    });
+    await query.execute();
+  }
 }
 
-async function seed(options) {
-  await createScheema();
-
-  await new QueryBuilder(dbQueryFn)
-    .insert(authorsTable)
-    .into(aurhorsFields)
-    .values([1, 'test1'])
-    .values([2, 'test2'])
-    .values([3, 'test3'])
-    .values([4, 'test4'])
-    .values([5, 'testForLikeOperator5'])
-    .values([6, 'testForSomething'])
-    .execute();
+if (!module.parent) {
+  const db = new DB(config.db);
+  seed(db.createQueryFn()).then(() => db.close());
 }
+
+module.exports = { seed };
 
 /*
 const {
@@ -115,9 +110,3 @@ async function seed(options) {
 }
 
 */
-
-if (!module.parent) {
-  seed({ logFlag: true }).then(() => connection.end());
-}
-
-module.exports = seed;
