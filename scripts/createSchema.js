@@ -34,7 +34,6 @@ async function createSchema({ queryFn, database }) {
   await queryFn(dropTableBooks);
   await queryFn(dropTableBookAuthors);
   await queryFn(createTableAuthors);
-  console.log('table:', createTableBooks);
   await queryFn(createTableBooks);
   await queryFn(createTableBookAuthors);
 }
@@ -47,7 +46,6 @@ if (!module.parent) {
       ...config.dbAdminUser,
       database: '',
     };
-    console.log(dbOptions);
     const db = new DB(dbOptions);
     const queryFn = db.createQueryFn();
     await createDatabaseAndGivePrivileges({
