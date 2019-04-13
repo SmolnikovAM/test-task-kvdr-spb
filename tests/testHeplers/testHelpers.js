@@ -3,7 +3,11 @@ const supertest = require('supertest');
 const uuid = require('uuid/v4');
 const DB = require('../../db');
 
-const { createSchema } = require('../../scripts/createSchema');
+const {
+  createSchema,
+  dropDatabaseFn,
+  createDatabaseAndGivePrivileges,
+} = require('../../scripts/createSchema');
 const { ServerError } = require('../../helpers/errors');
 
 const databasesToDrop = new Set();
@@ -26,7 +30,7 @@ async function dropDBs(config) {
     const d = [...databasesToDrop];
     for (let i = 0; i < d.length; i += 1) {
       // eslint-disable-next-line
-      await queryFn(`drop database \`${d[i]}\`;`);
+      await queryFn(dropDatabaseFn(d[i]));
     }
     db.close();
   }
@@ -34,28 +38,22 @@ async function dropDBs(config) {
 
 async function createDB(config) {
   const unique = uuid().replace(/-/g, '');
-  const { user, password } = config.dbAdminUser;
-  const db = new DB({ ...config.db, user, password });
+  const { user, host, database: configDbName, password } = config.db;
+  const db = new DB({
+    ...config.db,
+    database: '',
+    user: config.dbAdminUser.user,
+    password: config.dbAdminUser.password,
+  });
   const queryFn = db.createQueryFn();
-  const dbName = `test_${unique}`;
-  await queryFn(`drop database if exists \`${dbName}\`;`);
-  await queryFn(`create database \`${dbName}\`;`);
-  await queryFn(`use \`${dbName}\`;`);
-  await createSchema(queryFn);
-  await queryFn(
-    `grant insert, select, update, delete on \`${dbName}\`.* to '${
-      config.db.user
-    }'@'${config.db.host}';`,
-  );
-  await queryFn(`flush privileges;`);
-  databasesToDrop.add(dbName);
+  const database = `${configDbName || 'test'}_${unique}`;
+  await createDatabaseAndGivePrivileges({ queryFn, database, user, host });
+  await createSchema({ queryFn, database });
+  databasesToDrop.add(database);
 
-  db.connection.changeUser(
-    { user: config.db.user, password: config.db.password, database: dbName },
-    err => {
-      if (err) throw new ServerError(err);
-    },
-  );
+  db.connection.changeUser({ user, password, database }, err => {
+    if (err) throw new ServerError(err);
+  });
 
   const endTest = async () => {
     db.connection.changeUser(
@@ -64,8 +62,8 @@ async function createDB(config) {
         if (err) throw new ServerError(err);
       },
     );
-    await queryFn(`drop database \`${dbName}\`;`);
-    databasesToDrop.delete(dbName);
+    await queryFn(dropDatabaseFn(database));
+    databasesToDrop.delete(database);
     await db.close();
   };
 
