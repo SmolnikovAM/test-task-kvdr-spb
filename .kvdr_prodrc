@@ -4,9 +4,13 @@
   "staticFolder": "./static",
   "db": {
     "host": "localhost",
-    "database": "kvadro",
+    "database": "kvadro_prod",
     "port": 3306,
     "user": "testuser",
+    "password": "password"
+  },
+  "dbAdminUser": {
+    "user": "superuser",
     "password": "password"
   }
 }

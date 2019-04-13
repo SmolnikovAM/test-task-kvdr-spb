@@ -4,7 +4,7 @@
   "staticFolder": "./staticTest",
   "db": {
     "host": "localhost",
-    "database": "",
+    "database": "test_db",
     "port": 3306,
     "user": "testuser",
     "password": "password"
