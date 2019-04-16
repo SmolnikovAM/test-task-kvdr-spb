@@ -31,11 +31,13 @@ class Connection {
   }
 
   query(...arg) {
+    console.log(arg[0]);
     return new Promise((res, rej) => {
       const callback = (error, results, fields) => {
         if (error) {
           rej(error);
         } else {
+          if (Array.isArray(results)) console.log(results);
           res({ res: results, fields });
         }
       };
