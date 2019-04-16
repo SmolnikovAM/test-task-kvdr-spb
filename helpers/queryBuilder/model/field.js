@@ -54,6 +54,10 @@ class Field extends FieldProto {
     return this;
   }
 
+  getAliasName(query) {
+    return this.aliasMap.get(query) || this.alias;
+  }
+
   getAlias({ query, type }) {
     if (this.type === STAR_FIELD) return STAR;
     let tableName;
@@ -68,7 +72,7 @@ class Field extends FieldProto {
     if (query) {
       checkQuery(query);
       tableName = query.fromArg.getAlias(this.table);
-      fieldAlias = this.aliasMap.get(query) || this.alias;
+      fieldAlias = this.getAliasName(query);
     }
 
     let str = `${quote(tableName)}.${quote(fieldName)}`;
@@ -107,6 +111,8 @@ class Field extends FieldProto {
     } else {
       this.orderBy = type;
     }
+
+    return this;
   }
 
   asc(query) {
