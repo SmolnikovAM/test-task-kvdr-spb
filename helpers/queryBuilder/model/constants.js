@@ -6,12 +6,13 @@ const ERROR_MSG_NOT_A_TABLE = 'argument is not a table';
 const TABLE_ALIAS = 'table_alias';
 const TABLE_FIELD = 'table field';
 const STAR_FIELD = 'star field';
+const TABLE_QUERY = 'table query';
+const QUERY = 'query';
 
 const KEYWORD = 'keyword';
 const FIELDS_SELECT = 'fields select';
 
 const JOIN = 'join';
-
 const TABLE = 'table';
 const LEFT_JOIN = 'left join';
 const ON = 'on';
@@ -51,6 +52,7 @@ class QueryBuilderProto {}
 const OPERATORS_PATTERN = `^(\\${EQUAL}|${LIKE}|\\${GREATER_THAN}|\\${LESS_THAN})$`;
 
 const SQLCONST = {
+  TABLE_QUERY,
   OPERATORS_PATTERN,
   GREATER_THAN,
   LESS_THAN,
@@ -94,6 +96,7 @@ const SQLCONST = {
   STAR,
   ASC,
   DESC,
+  QUERY,
 };
 
 SQLCONST.SQLCONST = SQLCONST;

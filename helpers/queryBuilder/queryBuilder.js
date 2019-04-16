@@ -4,6 +4,8 @@ const Join = require('./model/join');
 const Where = require('./model/where');
 
 const {
+  QUERY,
+  TABLE_QUERY,
   SQLCONST,
   QueryBuilderProto,
   SELECT,
@@ -99,8 +101,13 @@ class QueryBuilder extends QueryBuilderProto {
     }
 
     this.fromArg = fromArg;
-    const type = fromArg instanceof Table ? TABLE : JOIN;
-    this.stack.push([type, fromArg]);
+    const params = this.fromArg.getParams();
+    if (params.length) {
+      this.params.push(...params);
+    }
+    // if(this.fromArg.type === TABLE)
+    // const type = fromArg instanceof Table ? TABLE : JOIN;
+    this.stack.push([fromArg.type, fromArg]);
     return this;
   }
 
@@ -275,6 +282,10 @@ class QueryBuilder extends QueryBuilderProto {
         add(quote(data.name));
       }
 
+      if (type === TABLE_QUERY) {
+        add(data.toString(QUERY));
+      }
+
       if (type === JOIN) {
         add(data.toString());
       }
@@ -344,7 +355,12 @@ class QueryBuilder extends QueryBuilderProto {
     if ([SELECT, INSERT, INTO, UPDATE, DELETE].indexOf(this.state) !== -1) {
       throw new ServerError('sql is not ready for sending');
     }
-    return this.dbQueryFn(this.toString(), this.params).then(({ res }) => res);
+    return this.dbQueryFn(this.toString(), this.params).then(({ res }) => {
+      // if (this.type === INSERT) {
+      //   return res.insertId;
+      // }
+      return res;
+    });
   }
 }
 

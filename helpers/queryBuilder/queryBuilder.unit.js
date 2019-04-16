@@ -1,6 +1,10 @@
 const { QueryBuilder, Table } = require('./queryBuilder');
 const { ServerError } = require('../errors');
-const { TABLE_ALIAS, DEFAULT_DATE_FORMAT } = require('./model/constants');
+const {
+  TABLE_ALIAS,
+  DEFAULT_DATE_FORMAT,
+  LESS_THAN,
+} = require('./model/constants');
 
 describe('simple queries', () => {
   const removeSpaces = str => str.toUpperCase().replace(/\s/g, '');
@@ -103,6 +107,48 @@ describe('simple queries', () => {
       `.replace(/'/g, '`');
     expect(removeSpaces(sql)).toBe(removeSpaces(ans));
     expect(query.getParams()).toEqual(['test', 54]);
+  });
+
+  test('select <fields> from <query> and <table>', () => {
+    const ta = new Table('tableA');
+    const tb = new Table('tableB');
+    const query = new QueryBuilder();
+    const idField = ta.field('id');
+    const tq = new Table(
+      query
+        .select([idField])
+        .from(ta)
+        .where([[idField, LESS_THAN, 10]]),
+    );
+
+    const queryMain = new QueryBuilder();
+
+    const fieldsList = [tq.field('id').as('id'), tb.field('field2')];
+    const join = tq.leftJoin(tb).on([tq.field('id'), tb.field('table1_id')]);
+    const conditions = [[tb.field('fieldB'), LESS_THAN, 42]];
+
+    const sql = queryMain
+      .select(fieldsList)
+      .from(join)
+      .where(conditions)
+      .toString();
+
+    const t = TABLE_ALIAS;
+    const ans = `
+      select 
+        '${t}1'.'id' as 'id'
+        ,'${t}2'.'field2' as 'field2' 
+      from 
+        (select 
+           'tableA'.'id' as 'id'
+          from 'tableA'
+          where 'tableA'.'id' < ?) '${t}1'
+         left join 'tableB' '${t}2'on 
+      ('${t}1'.'id' = '${t}2'.'table1_id')
+      where  '${t}2'.'fieldB' < ?
+      `.replace(/'/g, '`');
+    expect(removeSpaces(sql)).toBe(removeSpaces(ans));
+    expect(queryMain.getParams()).toEqual([10, 42]);
   });
 
   test('select * from table order by', () => {

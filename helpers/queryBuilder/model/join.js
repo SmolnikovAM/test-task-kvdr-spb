@@ -13,6 +13,8 @@ const {
   TableProto,
   FieldProto,
   JoinProto,
+  TABLE_QUERY,
+  JOIN,
 } = require('./constants');
 
 const JOINS_ARRAY = [LEFT_JOIN];
@@ -29,6 +31,12 @@ class Join extends JoinProto {
     this.tableCounter = 1;
     this.tablesParams.set(table, { alias: this.aliasName() });
     this.data = [{ status: TABLE, table }];
+    this.type = JOIN;
+    this.params = [...table.getParams()];
+  }
+
+  getParams() {
+    return this.params;
   }
 
   getAlias(table) {
@@ -60,6 +68,7 @@ class Join extends JoinProto {
       throw new ServerError(ERROR_MSG_JOIN_SAME_TABLE);
     this.status = LEFT_JOIN;
     this.setInfoForTable({ table });
+    this.params.push(...table.getParams());
     this.data.push({ table, status: LEFT_JOIN });
     return this;
   }
@@ -90,12 +99,14 @@ class Join extends JoinProto {
     this.data.forEach(({ status, table, expressions }) => {
       if (status === TABLE) {
         const { alias } = this.tablesParams.get(table);
-        str.push(`${quote(table.name)} ${quote(alias)}`);
+        // const tableName =
+        //   table.type === TABLE_QUERY ? table.name : quote(table.name);
+        str.push(`${table.toString(JOIN)} ${quote(alias)}`);
       }
 
       if (JOINS_ARRAY.indexOf(status) !== -1) {
         const { alias } = this.tablesParams.get(table);
-        str.push(`${status} ${quote(table.name)} ${quote(alias)}`);
+        str.push(`${status} ${table.toString(JOIN)} ${quote(alias)}`);
       }
 
       if (status === ON) {

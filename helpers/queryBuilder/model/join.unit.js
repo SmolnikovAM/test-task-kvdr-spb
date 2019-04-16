@@ -1,5 +1,6 @@
 const Join = require('./join');
-const { TableProto, FieldProto, TABLE_ALIAS } = require('./constants');
+const { quote } = require('./helpers');
+const { TableProto, FieldProto, TABLE_ALIAS, TABLE } = require('./constants');
 
 class Field extends FieldProto {
   constructor({ name, table }) {
@@ -14,7 +15,16 @@ class Table extends TableProto {
   constructor(name) {
     super();
     this.name = name;
+    this.type = TABLE;
     this.fields = {};
+  }
+  // eslint-disable-next-line
+  getParams() {
+    return [];
+  }
+
+  toString() {
+    return quote(this.name);
   }
 
   field(name) {
