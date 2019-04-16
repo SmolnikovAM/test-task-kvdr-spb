@@ -25,14 +25,14 @@ function encode(data) {
 async function dropDBs(config) {
   if (databasesToDrop.size > 0) {
     const { user, password } = config.dbAdminUser;
-    const db = new DB({ ...config.db, user, password });
+    const db = new DB({ ...config.db, database: '', user, password });
     const queryFn = db.createQueryFn();
     const d = [...databasesToDrop];
     for (let i = 0; i < d.length; i += 1) {
       // eslint-disable-next-line
       await queryFn(dropDatabaseFn(d[i]));
     }
-    db.close();
+    await db.close();
   }
 }
 
@@ -56,14 +56,6 @@ async function createDB(config) {
   });
 
   const endTest = async () => {
-    db.connection.changeUser(
-      { user: config.dbAdminUser.user, password: config.dbAdminUser.password },
-      err => {
-        if (err) throw new ServerError(err);
-      },
-    );
-    await queryFn(dropDatabaseFn(database));
-    databasesToDrop.delete(database);
     await db.close();
   };
 
