@@ -9,7 +9,7 @@
     "seed": "better-npm-run seed",
     "create-database:dev": "better-npm-run create-database:dev",
     "create-database:prod": "better-npm-run create-database:prod",
-    "test": "jest --verbose",
+    "test": "jest --verbose ",
     "test:unit": "better-npm-run test:unit",
     "test:e2e": "better-npm-run test:e2e"
   },
