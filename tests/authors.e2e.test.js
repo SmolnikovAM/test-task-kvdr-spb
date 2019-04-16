@@ -5,8 +5,6 @@ const createApp = require('../app');
 
 afterAll(async () => {
   await dropDBs(config);
-  // await new Promise(res => setTimeout(res, 1000));
-  console.log('after all');
 });
 
 describe('working with authors CRUD routing', () => {
@@ -42,7 +40,7 @@ describe('working with authors CRUD routing', () => {
     await endTest();
   });
 
-  test.skip('delete / read author', async () => {
+  test('delete / read author', async () => {
     const { queryFn, db, endTest } = await createDB(config);
     const app = createTestApp({ db, createApp });
     const authorsFixtures = [['testName0'], ['testName1']];
@@ -64,7 +62,7 @@ describe('working with authors CRUD routing', () => {
     await endTest();
   });
 
-  test.skip('modify / read author', async () => {
+  test('modify / read author', async () => {
     const { queryFn, db, endTest } = await createDB(config);
     const app = createTestApp({ db, createApp });
     const authorsFixtures = [['testName']];

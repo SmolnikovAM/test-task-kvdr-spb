@@ -3,6 +3,8 @@ const supertest = require('supertest');
 const uuid = require('uuid/v4');
 const DB = require('../../db');
 
+const enableToDeleteDatabaseFlag = true;
+
 const {
   createSchema,
   dropDatabaseFn,
@@ -23,7 +25,7 @@ function encode(data) {
 }
 
 async function dropDBs(config) {
-  if (databasesToDrop.size > 0) {
+  if (databasesToDrop.size > 0 && enableToDeleteDatabaseFlag) {
     const { user, password } = config.dbAdminUser;
     const db = new DB({ ...config.db, database: '', user, password });
     const queryFn = db.createQueryFn();
