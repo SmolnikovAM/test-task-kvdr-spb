@@ -11,7 +11,7 @@ const fieldsPattern = {
   type: 'array',
   items: {
     type: 'string',
-    pattern: '^(id|author)$',
+    pattern: '^(id|author|title)$',
   },
 };
 
@@ -60,6 +60,7 @@ const getAuthorsQuerySchema = {
           properties: {
             author: conditionPattern,
             id: conditionPattern,
+            title: conditionPattern,
           },
         },
       ],
