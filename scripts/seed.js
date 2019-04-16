@@ -3,16 +3,49 @@ const config = require('../config');
 const DB = require('../db');
 
 const authorsTable = new Table('authors');
-const aurhorsFields = [authorsTable.field('name')];
+const authorsFields = [authorsTable.field('id'), authorsTable.field('name')];
+
+const booksTable = new Table('books');
+const booksFields = [booksTable.field('id'), booksTable.field('title')];
+
+const bookAuthorsTable = new Table('book_authors');
+const bookAuthorsFields = [
+  bookAuthorsTable.field('author_id'),
+  bookAuthorsTable.field('book_id'),
+];
 
 async function seed({ queryFn, options }) {
-  const { authorsFixtures } = options || {};
+  const { authorsFixtures, booksFixtures, bookAuthorsFixtures } = options || {};
 
   if (authorsFixtures) {
-    const query = new QueryBuilder(queryFn)
-      .insert(authorsTable)
-      .into(aurhorsFields);
+    const fields = [...authorsFields];
+    if (authorsFixtures[0].length === 1) {
+      fields.shift();
+    }
+    const query = new QueryBuilder(queryFn).insert(authorsTable).into(fields);
     authorsFixtures.forEach(row => {
+      query.values(row);
+    });
+    await query.execute();
+  }
+
+  if (booksFixtures) {
+    const fields = [...booksFields];
+    if (booksFixtures[0].length === 1) {
+      fields.shift();
+    }
+    const query = new QueryBuilder(queryFn).insert(booksTable).into(fields);
+    booksFixtures.forEach(row => {
+      query.values(row);
+    });
+    await query.execute();
+  }
+
+  if (bookAuthorsFixtures) {
+    const query = new QueryBuilder(queryFn)
+      .insert(bookAuthorsTable)
+      .into(bookAuthorsFields);
+    bookAuthorsFixtures.forEach(row => {
       query.values(row);
     });
     await query.execute();
