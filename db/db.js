@@ -9,11 +9,21 @@ class Connection {
         global.console.error(`error connecting to mysql: ${err.stack}`);
         throw new ServerError('problem with database');
       }
+      // global.console.log(`open thread ${this.connection.threadId}`);
     });
   }
 
   close() {
-    this.connection.end();
+    // const { threadId } = this.connection;
+    let ok;
+    const ready = new Promise(res => {
+      ok = res;
+    });
+    this.connection.end(() => {
+      ok();
+      // global.console.log(`close thread ${threadId}`);
+    });
+    return ready;
   }
 
   createQueryFn() {
