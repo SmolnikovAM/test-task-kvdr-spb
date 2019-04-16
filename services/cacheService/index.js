@@ -1,5 +1,15 @@
 const { timeToDelete } = require('../../config');
 
+// app.use(async (ctx, next) => {
+//   await next();
+//   if (
+//     ctx.status === 200 &&
+//     ['POST', 'DELETE', 'UPDATE', 'PUT'].indexOf(ctx.req.method) !== -1
+//   ) {
+//     cacheService.clear();
+//   }
+// });
+
 class CacheService {
   constructor() {
     this.mem = new Map();
